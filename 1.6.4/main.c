@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 #define MAX_CHARS 10
 #define MAP_NROWS 5
@@ -9,6 +10,10 @@
 #define H '-' // horizontal segment
 #define V '|' // vertical segment
 #define B ' ' // blank
+
+#define NROWS(s) ((s) * 2 + 3)
+#define MIDDLE_ROW(s) ((s) + 1)
+#define NCOLS(s) ((s) + 2)
 
 /* Arrays with static storage duration require constant expressions in
  * initializer lists. This is in contrast to arrays with automatic storage
@@ -87,10 +92,6 @@ char char_maps[MAP_NCHARS][MAP_NROWS][MAP_NCOLS] = {
 		{B, H, B},
 	},
 };
-
-#define NROWS(s) ((s) * 2 + 3)
-#define MIDDLE_ROW(s) ((s) + 1)
-#define NCOLS(s) ((s) + 2)
 
 static inline bool
 is_in_region_1(int r, int c, int s)
@@ -181,44 +182,49 @@ is_in_region_9(int r, int c, int s)
 	return false;
 }
 
-void
-print_lcd(int s, char c)
+char
+get_segment_char(int d, int s, int row, int col)
 {
-	int i, j;
-	int d = c - '0';
+	char c = B;
+
+	if (is_in_region_1(row, col, s))
+		c = char_maps[d][0][1];
+	else if (is_in_region_2(row, col, s))
+		c = char_maps[d][1][0];
+	else if (is_in_region_3(row, col, s))
+		c = char_maps[d][1][1];
+	else if (is_in_region_4(row, col, s))
+		c = char_maps[d][1][2];
+	else if (is_in_region_5(row, col, s))
+		c = char_maps[d][2][1];
+	else if (is_in_region_6(row, col, s))
+		c = char_maps[d][3][0];
+	else if (is_in_region_7(row, col, s))
+		c = char_maps[d][3][1];
+	else if (is_in_region_8(row, col, s))
+		c = char_maps[d][3][2];
+	else if (is_in_region_9(row, col, s))
+		c = char_maps[d][4][1];
+
+	return c;
+}
+
+void
+print_lcd(int s, char *str)
+{
+	int i, j, str_idx, d;
+	char c;
 
 	for (i = 0; i < NROWS(s); i++) {
-		for (j = 0; j < NCOLS(s); j++) {
-			if (is_in_region_1(i, j, s)) {
-				putchar(char_maps[d][0][1]);
+		for (str_idx = 0; str_idx < strlen(str); str_idx++) {
+			c = str[str_idx];
+			d = c - '0';
 
-			} else if (is_in_region_2(i, j, s)) {
-				putchar(char_maps[d][1][0]);
-
-			} else if (is_in_region_3(i, j, s)) {
-				putchar(char_maps[d][1][1]);
-
-			} else if (is_in_region_4(i, j, s)) {
-				putchar(char_maps[d][1][2]);
-
-			} else if (is_in_region_5(i, j, s)) {
-				putchar(char_maps[d][2][1]);
-
-			} else if (is_in_region_6(i, j, s)) {
-				putchar(char_maps[d][3][0]);
-
-			} else if (is_in_region_7(i, j, s)) {
-				putchar(char_maps[d][3][1]);
-
-			} else if (is_in_region_8(i, j, s)) {
-				putchar(char_maps[d][3][2]);
-
-			} else if (is_in_region_9(i, j, s)) {
-				putchar(char_maps[d][4][1]);
-
-			} else {
-				putchar(B);
+			for (j = 0; j < NCOLS(s); j++) {
+				putchar(get_segment_char(d, s, i, j));
 			}
+
+			putchar(B);
 		}
 
 		putchar('\n');
@@ -229,19 +235,14 @@ int
 main(int argc, char **argv)
 {
 	int s;
-	char c;
 	char nstr[MAX_CHARS];
-	char *strp;
 
 	while (scanf("%d %s", &s, nstr) != EOF) {
 		if (s == 0)
 			break;
 
-		strp = nstr;
-
-		while (sscanf(strp++, " %c", &c) != EOF)
-			print_lcd(s, c);
-
+		print_lcd(s, nstr);
+		putchar('\n');
 	}
 
 	return 0;
