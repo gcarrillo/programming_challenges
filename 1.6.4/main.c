@@ -15,12 +15,12 @@
 #define MIDDLE_ROW(s) ((s) + 1)
 #define NCOLS(s) ((s) + 2)
 
-/* Arrays with static storage duration require constant expressions in
- * initializer lists. This is in contrast to arrays with automatic storage
- * duration, whose initializer lists can have variables.
+/*
+ * Arrays declared outside of all functions have static storage duration.
+ * The static keyword here specifies internal linkage, the the symbol won't be
+ * visible to the linker/other modules. const makes it a read-only object.
  */
-
-char char_maps[MAP_NCHARS][MAP_NROWS][MAP_NCOLS] = {
+static const char char_maps[MAP_NCHARS][MAP_NROWS][MAP_NCOLS] = {
 	{	//zero
 		{B, H, B},
 		{V, B, V},
@@ -96,7 +96,6 @@ char char_maps[MAP_NCHARS][MAP_NROWS][MAP_NCOLS] = {
 static inline bool
 is_in_region_1(int r, int c, int s)
 {
-
 	if (r == 0 && (c >= 1 && c < NCOLS(s) - 1))
 		return true;
 
@@ -106,7 +105,6 @@ is_in_region_1(int r, int c, int s)
 static inline bool
 is_in_region_2(int r, int c, int s)
 {
-
 	if ((r >= 1 && r < MIDDLE_ROW(s)) && c == 0)
 		return true;
 
@@ -126,7 +124,6 @@ is_in_region_3(int r, int c, int s)
 static inline bool
 is_in_region_4(int r, int c, int s)
 {
-
 	if ((r >= 1 && r < MIDDLE_ROW(s)) &&
 	    (c == NCOLS(s) - 1))
 		return true;
@@ -156,7 +153,7 @@ static inline bool
 is_in_region_7(int r, int c, int s)
 {
 	if ((r > MIDDLE_ROW(s) && r < NROWS(s) - 1) &&
-	    (c >= 1 && c < NCOLS(s) - 2 ))
+	    (c >= 1 && c < NCOLS(s) - 1))
 		return true;
 
 	return false;
@@ -209,16 +206,16 @@ get_segment_char(int d, int s, int row, int col)
 	return c;
 }
 
+/* str is a read-only pointer that itself stays constant */
 void
-print_lcd(int s, char *str)
+print_lcd(int s, const char * const str)
 {
-	int i, j, str_idx, d;
-	char c;
+	int i, j, d;
+	const char *p;
 
 	for (i = 0; i < NROWS(s); i++) {
-		for (str_idx = 0; str_idx < strlen(str); str_idx++) {
-			c = str[str_idx];
-			d = c - '0';
+		for (p = str; *p != '\0'; p++) {
+			d = *p - '0';
 
 			for (j = 0; j < NCOLS(s); j++) {
 				putchar(get_segment_char(d, s, i, j));
