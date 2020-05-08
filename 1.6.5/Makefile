@@ -1,6 +1,6 @@
 PROG = main
 CC = gcc
-CFLAGS = -Wall -ggdb3 -O0 -std=c99
+CFLAGS = -Wall -ggdb3 -O0 -std=c99 -DDEBUG
 LDFLAGS = -lm
 OBJS = main.o
 
